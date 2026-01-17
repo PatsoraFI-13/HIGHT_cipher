@@ -1,10 +1,6 @@
 BITS = 7
 
 
-def tint(x):
-    return int(x.encode().hex(), 16)
-
-
 def mod_sum(a, b):
     return (a + b) % (2**BITS)
 
@@ -34,11 +30,9 @@ def make_SK(K):
 
     for i in range(8):
         for j in range(8):
-            SK.append(mod_sum(tint(K[(j - i) % 8]), int(delta[16 * i + j], 2)))
+            SK.append(mod_sum(K[(j - i) % 8], int(delta[16 * i + j], 2)))
         for j in range(8):
-            SK.append(
-                mod_sum(tint(K[((j - i) % 8) + 8]), int(delta[16 * i + j + 8], 2))
-            )
+            SK.append(mod_sum(K[((j - i) % 8) + 8], int(delta[16 * i + j + 8], 2)))
     return SK
 
 
@@ -60,14 +54,14 @@ def hight_enc(P, K):
     X = []
 
     X_tmp = []
-    X_tmp.append(mod_sum(tint(P[0]), tint(WK[0])))
-    X_tmp.append(tint(P[1]))
-    X_tmp.append(tint(P[2]) ^ tint(WK[1]))
-    X_tmp.append(tint(P[3]))
-    X_tmp.append(mod_sum(tint(P[4]), tint(WK[2])))
-    X_tmp.append(tint(P[5]))
-    X_tmp.append(tint(P[6]) ^ tint(WK[3]))
-    X_tmp.append(tint(P[7]))
+    X_tmp.append(mod_sum(P[0], WK[0]))
+    X_tmp.append(P[1])
+    X_tmp.append(P[2] ^ WK[1])
+    X_tmp.append(P[3])
+    X_tmp.append(mod_sum(P[4], WK[2]))
+    X_tmp.append(P[5])
+    X_tmp.append(P[6] ^ WK[3])
+    X_tmp.append(P[7])
     X.append(X_tmp)
 
     for i in range(31):
@@ -94,17 +88,16 @@ def hight_enc(P, K):
     X.append(X_tmp)
 
     C = []
-    C.append(mod_sum(X[32][0], tint(WK[4])))
+    C.append(mod_sum(X[32][0], WK[4]))
     C.append(X[32][1])
-    C.append(X[32][2] ^ tint(WK[5]))
+    C.append(X[32][2] ^ WK[5])
     C.append(X[32][3])
-    C.append(mod_sum(X[32][4], tint(WK[6])))
+    C.append(mod_sum(X[32][4], WK[6]))
     C.append(X[32][5])
-    C.append(X[32][6] ^ tint(WK[7]))
+    C.append(X[32][6] ^ WK[7])
     C.append(X[32][7])
 
-    C_str = "".join(chr(x) for x in C)
-    return C_str
+    return C
 
 
 def hight_dec(C, K):
@@ -113,14 +106,14 @@ def hight_dec(C, K):
     X = []
 
     X_tmp = []
-    X_tmp.append(mod_sub(tint(C[0]), tint(WK[4])))
-    X_tmp.append(tint(C[1]))
-    X_tmp.append(tint(C[2]) ^ tint(WK[5]))
-    X_tmp.append(tint(C[3]))
-    X_tmp.append(mod_sum(tint(C[4]), -tint(WK[6])))
-    X_tmp.append(tint(C[5]))
-    X_tmp.append(tint(C[6]) ^ tint(WK[7]))
-    X_tmp.append(tint(C[7]))
+    X_tmp.append(mod_sub(C[0], WK[4]))
+    X_tmp.append(C[1])
+    X_tmp.append(C[2] ^ WK[5])
+    X_tmp.append(C[3])
+    X_tmp.append(mod_sub(C[4], WK[6]))
+    X_tmp.append(C[5])
+    X_tmp.append(C[6] ^ WK[7])
+    X_tmp.append(C[7])
     X.append(X_tmp)
 
     X_tmp = []
@@ -147,32 +140,30 @@ def hight_dec(C, K):
         X.append(X_tmp)
 
     P = []
-    P.append(mod_sub(X[32][0], tint(WK[0])))
+    P.append(mod_sub(X[32][0], WK[0]))
     P.append(X[32][1])
-    P.append(X[32][2] ^ tint(WK[1]))
+    P.append(X[32][2] ^ WK[1])
     P.append(X[32][3])
-    P.append(mod_sub(X[32][4], tint(WK[2])))
+    P.append(mod_sub(X[32][4], WK[2]))
     P.append(X[32][5])
-    P.append(X[32][6] ^ tint(WK[3]))
+    P.append(X[32][6] ^ WK[3])
     P.append(X[32][7])
 
-    P_str = "".join(chr(x) for x in P)
-    return P_str
+    return P
 
 
-P = "passw0rd"
-print(P)
-P_int = [ord(c) for c in P]
-print(P_int)
+P_str = "passw0rd"
+print(P_str)
+P = [ord(c) for c in P_str]
 
-K = "abcdefghijklmnop"
+K_str = "abcdefghijklmnop"
+print(K_str)
+K = [ord(c) for c in K_str]
 
 C = hight_enc(P, K)
-print(C)
-C_int = [ord(c) for c in C]
-print(C_int)
+C_str = [chr(c) for c in C]
+print("".join(C_str), "-->", C_str)
 
 P_dec = hight_dec(C, K)
-print(P_dec)
-P_dec_int = [ord(c) for c in P_dec]
-print(P_dec_int)
+P_dec_str = "".join(chr(c) for c in P_dec)
+print(P_dec_str)
