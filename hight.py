@@ -174,27 +174,3 @@ def DecryptData(Data, Key):
         DecryptedBlock = DecryptBlock(Block, Key)
         DecryptedData.extend(DecryptedBlock)
     return DecryptedData
-
-K_str = "abcdefghijklmnop"
-print(K_str)
-K = [ord(c) for c in K_str]
-
-Data_str = "Perspiciatis omnis laborum harum sapiente voluptatem sit vel. Corrupti ea aliquid cum et sint quia. Quia id ex ab laborum qui enim nesciunt quos. Quia deleniti facere culpa et qui impedit accusantium minima."
-print(Data_str)
-Data = [ord(c) for c in Data_str]
-
-EncryptedData = EncryptData(Data, K)
-EncryptedData_str = [chr(c) for c in EncryptedData]
-print("".join(EncryptedData_str))
-print("-->")
-print(EncryptedData_str)
-
-DecryptedData = DecryptData(EncryptedData, K)
-DecryptedData_str = "".join(chr(c) for c in DecryptedData)
-print(DecryptedData_str)
-
-TestEncryptedData = EncryptedData + [0, 0, 0]
-try:
-    DecryptData(TestEncryptedData, K)
-except ValueError as e:
-    print(f"Caught expected exception: {e}")
