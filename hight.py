@@ -1,5 +1,3 @@
-def mod_sub(a, b):
-    return (a - b) % (2**BITS)
 BITS = 7
 
 
@@ -13,6 +11,7 @@ def mod_sum(a, b):
 
 def mod_sub(a, b):
     return (a - b) % (2**BITS)
+
 
 def make_WK(K):
     WK = []
