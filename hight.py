@@ -256,4 +256,5 @@ def main():
         print("Must specify either encryption or decryption.")
 
 
-main()
+if __name__ == "__main__":
+    main()
