@@ -151,14 +151,13 @@ def hight_dec(C, K):
 
     return P
 
+K_str = "abcdefghijklmnop"
+print(K_str)
+K = [ord(c) for c in K_str]
 
 P_str = "passw0rd"
 print(P_str)
 P = [ord(c) for c in P_str]
-
-K_str = "abcdefghijklmnop"
-print(K_str)
-K = [ord(c) for c in K_str]
 
 C = hight_enc(P, K)
 C_str = [chr(c) for c in C]
