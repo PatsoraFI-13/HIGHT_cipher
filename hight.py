@@ -9,17 +9,14 @@ def mod_sub(a, b):
     return (a - b) % (2**BITS)
 
 
-def make_WK(K):
-    WK = []
+def GenerateRoundKeys(Key):
+    whiteningKey = []
     for i in range(4):
-        WK.append(K[i + 12])
+        whiteningKey.append(Key[i + 12])
     for i in range(4, 8):
-        WK.append(K[i - 4])
-    return WK
+        whiteningKey.append(Key[i - 4])
 
-
-def make_SK(K):
-    SK = []
+    subKey = []
     s = [0, 1, 0, 1, 1, 0, 1]
     delta = []
     delta.append("".join(str(s[i]) for i in range(6, -1, -1)))
@@ -30,10 +27,13 @@ def make_SK(K):
 
     for i in range(8):
         for j in range(8):
-            SK.append(mod_sum(K[(j - i) % 8], int(delta[16 * i + j], 2)))
+            subKey.append(mod_sum(Key[(j - i) % 8], int(delta[16 * i + j], 2)))
         for j in range(8):
-            SK.append(mod_sum(K[((j - i) % 8) + 8], int(delta[16 * i + j + 8], 2)))
-    return SK
+            subKey.append(
+                mod_sum(Key[((j - i) % 8) + 8], int(delta[16 * i + j + 8], 2))
+            )
+
+    return whiteningKey, subKey
 
 
 def rol(val, i_bits, max_bits=BITS):
@@ -48,9 +48,10 @@ def F1(x):
     return rol(x, 3) ^ rol(x, 4) ^ rol(x, 6)
 
 
-def hight_enc(P, K):
-    WK = make_WK(K)
-    SK = make_SK(K)
+def EncryptBlock(P, K):
+    # P - plaintext block
+    # K - key
+    WK, SK = GenerateRoundKeys(K)
     X = []
 
     X_tmp = []
@@ -100,9 +101,10 @@ def hight_enc(P, K):
     return C
 
 
-def hight_dec(C, K):
-    WK = make_WK(K)
-    SK = make_SK(K)
+def DecryptBlock(C, K):
+    # C - ciphertext block
+    # K - key
+    WK, SK = GenerateRoundKeys(K)
     X = []
 
     X_tmp = []
@@ -151,18 +153,48 @@ def hight_dec(C, K):
 
     return P
 
+
+def EncryptData(Data, Key):
+    EncryptedData = []
+    for i in range(0, len(Data), 8):
+        Block = Data[i : i + 8]
+        if len(Block) < 8:
+            Block += [0] * (8 - len(Block))
+        EncryptedBlock = EncryptBlock(Block, Key)
+        EncryptedData.extend(EncryptedBlock)
+    return EncryptedData
+
+
+def DecryptData(Data, Key):
+    DecryptedData = []
+    for i in range(0, len(Data), 8):
+        Block = Data[i : i + 8]
+        if len(Block) < 8:
+            raise ValueError("Encrypted data length is wrong")
+        DecryptedBlock = DecryptBlock(Block, Key)
+        DecryptedData.extend(DecryptedBlock)
+    return DecryptedData
+
 K_str = "abcdefghijklmnop"
 print(K_str)
 K = [ord(c) for c in K_str]
 
-P_str = "passw0rd"
-print(P_str)
-P = [ord(c) for c in P_str]
+Data_str = "Perspiciatis omnis laborum harum sapiente voluptatem sit vel. Corrupti ea aliquid cum et sint quia. Quia id ex ab laborum qui enim nesciunt quos. Quia deleniti facere culpa et qui impedit accusantium minima."
+print(Data_str)
+Data = [ord(c) for c in Data_str]
 
-C = hight_enc(P, K)
-C_str = [chr(c) for c in C]
-print("".join(C_str), "-->", C_str)
+EncryptedData = EncryptData(Data, K)
+EncryptedData_str = [chr(c) for c in EncryptedData]
+print("".join(EncryptedData_str))
+print("-->")
+print(EncryptedData_str)
 
-P_dec = hight_dec(C, K)
-P_dec_str = "".join(chr(c) for c in P_dec)
-print(P_dec_str)
+DecryptedData = DecryptData(EncryptedData, K)
+DecryptedData_str = "".join(chr(c) for c in DecryptedData)
+print(DecryptedData_str)
+
+TestEncryptedData = EncryptedData + [0, 0, 0]
+try:
+    DecryptData(TestEncryptedData, K)
+except ValueError as e:
+    print(f"Caught expected exception: {e}")
