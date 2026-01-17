@@ -1,9 +1,18 @@
+def mod_sub(a, b):
+    return (a - b) % (2**BITS)
 BITS = 7
 
 
 def tint(x):
     return int(x.encode().hex(), 16)
 
+
+def mod_sum(a, b):
+    return (a + b) % (2**BITS)
+
+
+def mod_sub(a, b):
+    return (a - b) % (2**BITS)
 
 def make_WK(K):
     WK = []
@@ -26,10 +35,10 @@ def make_SK(K):
 
     for i in range(8):
         for j in range(8):
-            SK.append((tint(K[(j - i) % 8]) + int(delta[16 * i + j], 2)) % (2**BITS))
+            SK.append(mod_sum(tint(K[(j - i) % 8]), int(delta[16 * i + j], 2)))
         for j in range(8):
             SK.append(
-                (tint(K[((j - i) % 8) + 8]) + int(delta[16 * i + j + 8], 2)) % (2**BITS)
+                mod_sum(tint(K[((j - i) % 8) + 8]), int(delta[16 * i + j + 8], 2))
             )
     return SK
 
@@ -52,11 +61,11 @@ def hight_enc(P, K):
     X = []
 
     X_tmp = []
-    X_tmp.append((tint(P[0]) + tint(WK[0])) % (2**BITS))
+    X_tmp.append(mod_sum(tint(P[0]), tint(WK[0])))
     X_tmp.append(tint(P[1]))
     X_tmp.append(tint(P[2]) ^ tint(WK[1]))
     X_tmp.append(tint(P[3]))
-    X_tmp.append((tint(P[4]) + tint(WK[2])) % (2**BITS))
+    X_tmp.append(mod_sum(tint(P[4]), tint(WK[2])))
     X_tmp.append(tint(P[5]))
     X_tmp.append(tint(P[6]) ^ tint(WK[3]))
     X_tmp.append(tint(P[7]))
@@ -64,33 +73,33 @@ def hight_enc(P, K):
 
     for i in range(31):
         X_tmp = []
-        X_tmp.append(X[-1][7] ^ ((F0(X[-1][6]) + SK[4 * i + 3]) % (2**BITS)))
+        X_tmp.append(X[-1][7] ^ mod_sum(F0(X[-1][6]), SK[4 * i + 3]))
         X_tmp.append(X[-1][0])
-        X_tmp.append((X[-1][1] + ((F1(X[-1][0]) ^ SK[4 * i]))) % (2**BITS))
+        X_tmp.append(mod_sum(X[-1][1], (F1(X[-1][0]) ^ SK[4 * i])))
         X_tmp.append(X[-1][2])
-        X_tmp.append(X[-1][3] ^ ((F0(X[-1][2]) + SK[4 * i + 1]) % (2**BITS)))
+        X_tmp.append(X[-1][3] ^ mod_sum(F0(X[-1][2]), SK[4 * i + 1]))
         X_tmp.append(X[-1][4])
-        X_tmp.append((X[-1][5] + ((F1(X[-1][4]) ^ SK[4 * i + 2]))) % (2**BITS))
+        X_tmp.append(mod_sum(X[-1][5], (F1(X[-1][4]) ^ SK[4 * i + 2])))
         X_tmp.append(X[-1][6])
         X.append(X_tmp)
 
     X_tmp = []
     X_tmp.append(X[31][0])
-    X_tmp.append((X[31][1] + (F1(X[31][0]) ^ SK[124])) % (2**BITS))
+    X_tmp.append(mod_sum(X[31][1], (F1(X[31][0]) ^ SK[124])))
     X_tmp.append(X[31][2])
-    X_tmp.append(X[31][3] ^ ((F0(X[31][2]) + SK[125]) % (2**BITS)))
+    X_tmp.append(X[31][3] ^ mod_sum(F0(X[31][2]), SK[125]))
     X_tmp.append(X[31][4])
-    X_tmp.append((X[31][5] + (F1(X[31][4]) ^ SK[126])) % (2**BITS))
+    X_tmp.append(mod_sum(X[31][5], (F1(X[31][4]) ^ SK[126])))
     X_tmp.append(X[31][6])
-    X_tmp.append(X[31][7] ^ ((F0(X[31][6]) + SK[127]) % (2**BITS)))
+    X_tmp.append(X[31][7] ^ mod_sum(F0(X[31][6]), SK[127]))
     X.append(X_tmp)
 
     C = []
-    C.append((X[32][0] + tint(WK[4])) % (2**BITS))
+    C.append(mod_sum(X[32][0], tint(WK[4])))
     C.append(X[32][1])
     C.append(X[32][2] ^ tint(WK[5]))
     C.append(X[32][3])
-    C.append((X[32][4] + tint(WK[6])) % (2**BITS))
+    C.append(mod_sum(X[32][4], tint(WK[6])))
     C.append(X[32][5])
     C.append(X[32][6] ^ tint(WK[7]))
     C.append(X[32][7])
@@ -105,11 +114,11 @@ def hight_dec(C, K):
     X = []
 
     X_tmp = []
-    X_tmp.append((tint(C[0]) - tint(WK[4])) % (2**BITS))
+    X_tmp.append(mod_sub(tint(C[0]), tint(WK[4])))
     X_tmp.append(tint(C[1]))
     X_tmp.append(tint(C[2]) ^ tint(WK[5]))
     X_tmp.append(tint(C[3]))
-    X_tmp.append((tint(C[4]) - tint(WK[6])) % (2**BITS))
+    X_tmp.append(mod_sum(tint(C[4]), -tint(WK[6])))
     X_tmp.append(tint(C[5]))
     X_tmp.append(tint(C[6]) ^ tint(WK[7]))
     X_tmp.append(tint(C[7]))
@@ -117,33 +126,33 @@ def hight_dec(C, K):
 
     X_tmp = []
     X_tmp.append(X[0][0])
-    X_tmp.append((X[0][1] - (F1(X[0][0]) ^ SK[124])) % (2**BITS))
+    X_tmp.append(mod_sub(X[0][1], (F1(X[0][0]) ^ SK[124])))
     X_tmp.append(X[0][2])
-    X_tmp.append(X[0][3] ^ ((F0(X[0][2]) + SK[125]) % (2**BITS)))
+    X_tmp.append(X[0][3] ^ mod_sum(F0(X[0][2]), SK[125]))
     X_tmp.append(X[0][4])
-    X_tmp.append((X[0][5] - (F1(X[0][4]) ^ SK[126])) % (2**BITS))
+    X_tmp.append(mod_sub(X[0][5], (F1(X[0][4]) ^ SK[126])))
     X_tmp.append(X[0][6])
-    X_tmp.append(X[0][7] ^ ((F0(X[0][6]) + SK[127]) % (2**BITS)))
+    X_tmp.append(X[0][7] ^ mod_sum(F0(X[0][6]), SK[127]))
     X.append(X_tmp)
 
     for i in range(30, -1, -1):
         X_tmp = []
         X_tmp.append(X[-1][1])
-        X_tmp.append((X[-1][2] - (F1(X[-1][1]) ^ SK[4 * i])) % (2**BITS))
+        X_tmp.append(mod_sub(X[-1][2], (F1(X[-1][1]) ^ SK[4 * i])))
         X_tmp.append(X[-1][3])
-        X_tmp.append(X[-1][4] ^ ((F0(X[-1][3]) + SK[4 * i + 1]) % (2**BITS)))
+        X_tmp.append(X[-1][4] ^ mod_sum(F0(X[-1][3]), SK[4 * i + 1]))
         X_tmp.append(X[-1][5])
-        X_tmp.append((X[-1][6] - (F1(X[-1][5]) ^ SK[4 * i + 2])) % (2**BITS))
+        X_tmp.append(mod_sub(X[-1][6], (F1(X[-1][5]) ^ SK[4 * i + 2])))
         X_tmp.append(X[-1][7])
-        X_tmp.append(X[-1][0] ^ ((F0(X[-1][7]) + SK[4 * i + 3]) % (2**BITS)))
+        X_tmp.append(X[-1][0] ^ mod_sum(F0(X[-1][7]), SK[4 * i + 3]))
         X.append(X_tmp)
 
     P = []
-    P.append((X[32][0] - tint(WK[0])) % (2**BITS))
+    P.append(mod_sub(X[32][0], tint(WK[0])))
     P.append(X[32][1])
     P.append(X[32][2] ^ tint(WK[1]))
     P.append(X[32][3])
-    P.append((X[32][4] - tint(WK[2])) % (2**BITS))
+    P.append(mod_sub(X[32][4], tint(WK[2])))
     P.append(X[32][5])
     P.append(X[32][6] ^ tint(WK[3]))
     P.append(X[32][7])
