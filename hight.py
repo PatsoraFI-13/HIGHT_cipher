@@ -1,3 +1,6 @@
+import argparse
+import random
+
 BITS = 7
 
 
@@ -172,5 +175,85 @@ def DecryptData(Data, Key):
         if len(Block) < 8:
             raise ValueError("Encrypted data length is wrong")
         DecryptedBlock = DecryptBlock(Block, Key)
+        if i + 8 >= len(Data):
+            while DecryptedBlock and DecryptedBlock[-1] == 0:
+                DecryptedBlock.pop()
         DecryptedData.extend(DecryptedBlock)
     return DecryptedData
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Process files with a key")
+
+    parser.add_argument(
+        "-e", "--encrypt", action="store_true", help="Encrypt the input file"
+    )
+    parser.add_argument(
+        "-d", "--decrypt", action="store_true", help="Decrypt the input file"
+    )
+    parser.add_argument("-i", "--input", required=True, help="Input file path")
+    parser.add_argument("-k", "--key", required=True, help="Key file path")
+    parser.add_argument("-o", "--output", required=True, help="Output file path")
+
+    args = parser.parse_args()
+
+    encryption = args.encrypt
+    decryption = args.decrypt
+    input_file = args.input
+    key_file = args.key
+    output_file = args.output
+
+    if encryption & decryption:
+        print("Cannot specify both encryption and decryption.")
+
+    elif encryption:
+        try:
+            with open(input_file, "rb") as f:
+                data = f.read()
+        except FileNotFoundError:
+            print(f"Error: Input file '{input_file}' not found.")
+            return
+
+        try:
+            with open(key_file, "rb") as f:
+                key = f.read().strip()
+        except FileNotFoundError:
+            # key must be readable
+            key = bytes(random.randint(32, 2**BITS - 2) for _ in range(16))
+            with open(key_file, "wb") as f_new:
+                f_new.write(key)
+
+        result = EncryptData(list(data), list(key))
+
+        with open(output_file, "wb") as f:
+            f.write(bytes(result))
+
+    elif decryption:
+        try:
+            with open(input_file, "rb") as f:
+                data = f.read()
+        except FileNotFoundError:
+            print(f"Error: Input file '{input_file}' not found.")
+            return
+
+        try:
+            with open(key_file, "rb") as f:
+                key = f.read().strip()
+        except FileNotFoundError:
+            print(f"Error: Key file '{key_file}' not found.")
+            return
+
+        try:
+            result = DecryptData(list(data), list(key))
+        except ValueError as ve:
+            print(f"Error during decryption: {ve}")
+            return
+
+        with open(output_file, "wb") as f:
+            f.write(bytes(result))
+
+    else:
+        print("Must specify either encryption or decryption.")
+
+
+main()
