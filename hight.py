@@ -5,14 +5,17 @@ BITS = 8
 
 
 def mod_sum(a, b):
+    # modular addition
     return (a + b) % (2**BITS)
 
 
 def mod_sub(a, b):
+    # modular subtraction
     return (a - b) % (2**BITS)
 
 
 def GenerateRoundKeys(Key):
+    # reverse key
     Key = Key[::-1]
 
     whiteningKey = []
@@ -42,6 +45,7 @@ def GenerateRoundKeys(Key):
 
 
 def rol(val, i_bits, max_bits=BITS):
+    # left rotation
     return ((val << i_bits) & (2**max_bits - 1)) | (val >> (max_bits - i_bits))
 
 
@@ -56,6 +60,8 @@ def F1(x):
 def EncryptBlock(P, K):
     # P - plaintext block
     # K - key
+
+    # reverse plaintext block
     P = P[::-1]
 
     WK, SK = GenerateRoundKeys(K)
@@ -72,6 +78,7 @@ def EncryptBlock(P, K):
     X_tmp.append(P[7])
     X.append(X_tmp)
 
+    # 31 encryption rounds
     for i in range(31):
         X_tmp = []
         X_tmp.append(X[-1][7] ^ mod_sum(F0(X[-1][6]), SK[4 * i + 3]))
@@ -84,6 +91,7 @@ def EncryptBlock(P, K):
         X_tmp.append(X[-1][6])
         X.append(X_tmp)
 
+    # final round
     X_tmp = []
     X_tmp.append(X[31][0])
     X_tmp.append(mod_sum(X[31][1], (F1(X[31][0]) ^ SK[124])))
@@ -105,6 +113,7 @@ def EncryptBlock(P, K):
     C.append(X[32][6] ^ WK[7])
     C.append(X[32][7])
 
+    # reverse ciphertext block
     return C[::-1]
 
 
@@ -127,6 +136,7 @@ def DecryptBlock(C, K):
     X_tmp.append(C[7])
     X.append(X_tmp)
 
+    # final round (inverse)
     X_tmp = []
     X_tmp.append(X[0][0])
     X_tmp.append(mod_sub(X[0][1], (F1(X[0][0]) ^ SK[124])))
@@ -138,6 +148,7 @@ def DecryptBlock(C, K):
     X_tmp.append(X[0][7] ^ mod_sum(F0(X[0][6]), SK[127]))
     X.append(X_tmp)
 
+    # 31 decryption rounds (inverse order)
     for i in range(30, -1, -1):
         X_tmp = []
         X_tmp.append(X[-1][1])
@@ -165,8 +176,10 @@ def DecryptBlock(C, K):
 
 def EncryptData(Data, Key):
     EncryptedData = []
+    # split data into blocks
     for i in range(0, len(Data), 8):
         Block = Data[i : i + 8]
+        # add nulls to make block full
         if len(Block) < 8:
             Block += [0] * (8 - len(Block))
         EncryptedBlock = EncryptBlock(Block, Key)
@@ -178,9 +191,11 @@ def DecryptData(Data, Key):
     DecryptedData = []
     for i in range(0, len(Data), 8):
         Block = Data[i : i + 8]
+        # check block size
         if len(Block) < 8:
             raise ValueError("Encrypted data length is wrong")
         DecryptedBlock = DecryptBlock(Block, Key)
+        # remove tail nulls
         if i + 8 >= len(Data):
             while DecryptedBlock and DecryptedBlock[-1] == 0:
                 DecryptedBlock.pop()
@@ -189,6 +204,7 @@ def DecryptData(Data, Key):
 
 
 def main():
+    # command-line interface arguments parsing
     parser = argparse.ArgumentParser(description="Process files with a key")
 
     parser.add_argument(
@@ -224,7 +240,7 @@ def main():
             with open(key_file, "rb") as f:
                 key = f.read().strip()
         except FileNotFoundError:
-            # key must be readable
+            # if key file doesn't exist, generate random key and save it
             key = bytes(random.randint(32, 2**BITS - 2) for _ in range(16))
             with open(key_file, "wb") as f_new:
                 f_new.write(key)
