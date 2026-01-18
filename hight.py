@@ -1,7 +1,7 @@
 import argparse
 import random
 
-BITS = 7
+BITS = 8
 
 
 def mod_sum(a, b):
@@ -13,6 +13,8 @@ def mod_sub(a, b):
 
 
 def GenerateRoundKeys(Key):
+    Key = Key[::-1]
+
     whiteningKey = []
     for i in range(4):
         whiteningKey.append(Key[i + 12])
@@ -25,7 +27,7 @@ def GenerateRoundKeys(Key):
     delta.append("".join(str(s[i]) for i in range(6, -1, -1)))
 
     for i in range(1, 128):
-        s.append(s[i + 2 - 1] ^ s[i - 1 - 1])
+        s.append(s[i + 2] ^ s[i - 1])
         delta.append("".join(str(s[j]) for j in range(i + 6, i - 1, -1)))
 
     for i in range(8):
@@ -54,6 +56,8 @@ def F1(x):
 def EncryptBlock(P, K):
     # P - plaintext block
     # K - key
+    P = P[::-1]
+
     WK, SK = GenerateRoundKeys(K)
     X = []
 
@@ -101,12 +105,14 @@ def EncryptBlock(P, K):
     C.append(X[32][6] ^ WK[7])
     C.append(X[32][7])
 
-    return C
+    return C[::-1]
 
 
 def DecryptBlock(C, K):
     # C - ciphertext block
     # K - key
+    C = C[::-1]
+
     WK, SK = GenerateRoundKeys(K)
     X = []
 
@@ -154,7 +160,7 @@ def DecryptBlock(C, K):
     P.append(X[32][6] ^ WK[3])
     P.append(X[32][7])
 
-    return P
+    return P[::-1]
 
 
 def EncryptData(Data, Key):
