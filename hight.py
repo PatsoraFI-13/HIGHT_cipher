@@ -241,9 +241,13 @@ def main():
                 key = f.read().strip()
         except FileNotFoundError:
             # if key file doesn't exist, generate random key and save it
-            key = bytes(random.randint(32, 2**BITS - 2) for _ in range(16))
+            key = bytes(random.randint(0, 2**BITS - 1) for _ in range(16))
             with open(key_file, "wb") as f_new:
                 f_new.write(key)
+
+        if len(key) != 16:
+            print("Error: Key length must be 16 bytes.")
+            return
 
         result = EncryptData(list(data), list(key))
 
