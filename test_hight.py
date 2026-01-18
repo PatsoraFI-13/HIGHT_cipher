@@ -4,30 +4,30 @@ from hight import *
 
 class TestModularOperations(unittest.TestCase):
     def test_mod_sum(self):
-        self.assertEqual(mod_sum(100, 50), 22)
-        self.assertEqual(mod_sum(64, 64), 0)
+        self.assertEqual(mod_sum(200, 100), 44)
+        self.assertEqual(mod_sum(200, 56), 0)
         self.assertEqual(mod_sum(10, 20), 30)
 
     def test_mod_sub(self):
         self.assertEqual(mod_sub(50, 30), 20)
-        self.assertEqual(mod_sub(10, 20), 118)
-        self.assertEqual(mod_sub(0, 1), 127)
+        self.assertEqual(mod_sub(10, 20), 246)
+        self.assertEqual(mod_sub(0, 1), 255)
 
 
 class TestRotationOperations(unittest.TestCase):
     def test_rol(self):
-        self.assertEqual(rol(0b1000000, 1), 0b0000001)
-        self.assertEqual(rol(0b0000001, 1), 0b0000010)
-        self.assertEqual(rol(0b1010101, 1), 0b0101011)
+        self.assertEqual(rol(0b10000000, 1), 0b00000001)
+        self.assertEqual(rol(0b00000001, 1), 0b00000010)
+        self.assertEqual(rol(0b10101010, 1), 0b01010101)
 
     def test_F0(self):
-        result = F0(0b1010101)
+        result = F0(0b10101010)
         self.assertIsInstance(result, int)
         self.assertGreaterEqual(result, 0)
         self.assertLess(result, 2**BITS)
 
     def test_F1(self):
-        result = F1(0b1010101)
+        result = F1(0b10101010)
         self.assertIsInstance(result, int)
         self.assertGreaterEqual(result, 0)
         self.assertLess(result, 2**BITS)
